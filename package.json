@@ -1,0 +1,23 @@
+{
+  "name": "test-mirror",
+  "version": "1.0.0",
+  "description": "Map a test for each file of your source code",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kigiri/test-mirror.git"
+  },
+  "keywords": [
+    "test",
+    "mocha"
+  ],
+  "author": "Clément Denis <le.mikmac@gmail.com> (http://cdenis.net)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kigiri/test-mirror/issues"
+  },
+  "homepage": "https://github.com/kigiri/test-mirror#readme"
+}
