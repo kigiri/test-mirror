@@ -43,15 +43,7 @@ const mochaGlobals = [
 const noFile = () => { throw Error('no test file !') }
 const isStr = str => typeof str === 'string'
 
-let called = false
-
-process.nextTick(() => {
-  if (!called)
-  init({})
-})
-
 const init = opts => {
-  called = true
   opts || (opts = {})
   const rootDir = isStr(opts.rootPath)
     ? opts.rootPath
@@ -67,6 +59,12 @@ const init = opts => {
     ? fn(value)
     : isFn(fallback) ? fallback(value) : value
 
+  if (!isFn(opts.match)) {
+    opts.match = RegExp.prototype.test.bind(opts.match instanceof RegExp
+      ? opts.match
+      : /\.js$/)
+  }
+
   opts.args || (opts.args = { assert })
 
   const addInfo = (src, filename) => {
@@ -77,7 +75,7 @@ const init = opts => {
   }
 
   const startTests = () => eachJsFiles(srcPath, filename => {
-    if (!/\.js$/.test(filename)) return
+    if (!opts.match(filename)) return
     const _module = require(filename)
 
     try {
@@ -89,7 +87,7 @@ const init = opts => {
     catch (err) {
       err.testNotFound = err.code === 'MODULE_NOT_FOUND'
       fireEvent(opts.onFailingTest, addInfo(err, filename), () => err.testNotFound
-        ? console.log('No tests found for "'+ err.name +'"')
+        ? opts.ignoreSkip || console.log('No tests found for "'+ err.name +'"')
         : console.log('Unexpected error testing file "'+ err.name
           +'" :\n'+ err.stack))
     }
@@ -99,7 +97,7 @@ const init = opts => {
     if (!isFn(opts.wrapper)) {
       opts.wrapper = (info, fn) => describe('Testing module '+ info.name, () => {
         if (info.testNotFound) {
-          return it.skip('Tests missing', noFile)
+          return opts.ignoreSkip || it.skip('Tests missing', noFile)
         }
         try {
           return fn()

@@ -10,6 +10,16 @@ require('test-mirror')({
    * it is populated with all the mocha globals
    */
 
+  ignoreNotFound: false,
+  /* if true, Silently ignore file if no tests are found
+   * default to false
+   */
+
+  match: /\.js$/,
+  /* a RegExp or function that is apply to the resolved filename of the module
+   * default to only .js file
+   */
+
   rootPath: __dirname + '/..',
   /* String: default to the project parent folder
    */
