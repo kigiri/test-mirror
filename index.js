@@ -81,11 +81,13 @@ const init = opts => {
     const _module = require(filename)
 
     try {
-      const testFilePath = getTestPath(filename) + suffix
-      if (!fs.existsSync(testFilePath)) {
-        throw new Error(missingErrorMessage)
+      let testFilePath
+      try {
+        testFilePath = require.resolve(getTestPath(filename) + suffix)
+      } catch (err) {
+        throw new Error(missingErrorMessage)        
       }
-      const testForModule = require()
+      const testForModule = require(testFilePath)
       if (!isFn(opts.wrapper)) return testForModule(opts.args, _module)
       opts.wrapper(addInfo({}, filename), () => testForModule(opts.args, _module))
     }
@@ -106,15 +108,25 @@ const init = opts => {
         if (info.testNotFound) {
           return opts.ignoreNotFound || it.skip('Tests missing', noFile)
         }
-        try {
-          return fn()
-        } catch (err) {
-          return it('should load the tests properly', () => { throw err })
-        }
+
+        const onError = err => it('should load the tests properly', () => {
+          throw err
+        })
+
+        if (info instanceof Error) return onError(info)
+
+        try { fn() }
+        catch (err) { onError(err) }
       })
     }
+
     const fail = isFn(opts.onFailingTest) ? opts.onFailingTest : () => {}
-    opts.onFailingTest = err => err.testNotFound && opts.wrapper(err)
+
+    opts.onFailingTest = err => {
+      opts.wrapper(err)
+      fail(err)
+    }
+
     mochaGlobals.forEach(key => opts.args[key] === undefined
       ? opts.args[key] = global[key]
       : opts.args['_'+ key] = global[key])
