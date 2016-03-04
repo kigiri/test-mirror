@@ -40,6 +40,8 @@ const mochaGlobals = [
   'test',
 ]
 
+const missingErrorMessage = 'test-mirror: no tests for module';
+
 const noFile = () => { throw Error('no test file !') }
 const isStr = str => typeof str === 'string'
 
@@ -79,13 +81,17 @@ const init = opts => {
     const _module = require(filename)
 
     try {
-      const testForModule = require(getTestPath(filename) + suffix)
+      const testFilePath = getTestPath(filename) + suffix
+      if (!fs.existsSync(testFilePath)) {
+        throw new Error(missingErrorMessage)
+      }
+      const testForModule = require()
       if (!isFn(opts.wrapper)) return testForModule(opts.args, _module)
       opts.wrapper(addInfo({}, filename), () => testForModule(opts.args, _module))
     }
 
     catch (err) {
-      err.testNotFound = err.code === 'MODULE_NOT_FOUND'
+      err.testNotFound = err.message === missingErrorMessage
       fireEvent(opts.onFailingTest, addInfo(err, filename), () => err.testNotFound
         ? opts.ignoreNotFound
           || console.log('No tests found for "'+ err.name +'"')
