@@ -87,7 +87,8 @@ const init = opts => {
     catch (err) {
       err.testNotFound = err.code === 'MODULE_NOT_FOUND'
       fireEvent(opts.onFailingTest, addInfo(err, filename), () => err.testNotFound
-        ? opts.ignoreSkip || console.log('No tests found for "'+ err.name +'"')
+        ? opts.ignoreNotFound
+          || console.log('No tests found for "'+ err.name +'"')
         : console.log('Unexpected error testing file "'+ err.name
           +'" :\n'+ err.stack))
     }
@@ -97,7 +98,7 @@ const init = opts => {
     if (!isFn(opts.wrapper)) {
       opts.wrapper = (info, fn) => describe('Testing module '+ info.name, () => {
         if (info.testNotFound) {
-          return opts.ignoreSkip || it.skip('Tests missing', noFile)
+          return opts.ignoreNotFound || it.skip('Tests missing', noFile)
         }
         try {
           return fn()
@@ -107,8 +108,7 @@ const init = opts => {
       })
     }
     const fail = isFn(opts.onFailingTest) ? opts.onFailingTest : () => {}
-    opts.onFailingTest = err => err.testNotFound
-      && opts.wrapper(err)
+    opts.onFailingTest = err => err.testNotFound && opts.wrapper(err)
     mochaGlobals.forEach(key => opts.args[key] === undefined
       ? opts.args[key] = global[key]
       : opts.args['_'+ key] = global[key])
