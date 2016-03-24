@@ -39,6 +39,10 @@ require('test-mirror')({
    * default to '.spec'.
    */
 
+  forceMocha: false,
+  /* Boolean: force to use mocha environnement.
+   */
+
   onFailingTest: err => console.log(err),
   /* Function: called every times a test fail to be setup
    * the usual case is that the test file wasn't found

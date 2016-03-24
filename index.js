@@ -20,9 +20,9 @@ const eachJsFiles = (dirname, fn) => readdir(dirname)
 
 const isFn = fn => typeof fn === 'function'
 
-const isInMocha = () => Boolean(process.argv.map(p => p.split(path.sep))
+const mochaDetected = Boolean(process.argv.map(p => p.split(path.sep))
   .map(p => p.slice(p.length - 2).join('').replace('_', ''))
-  .filter(p => p === 'binmocha').length)
+  .filter(p => /binmocha/.test(p)).length)
 
 const mochaGlobals = [
   'after',
@@ -51,6 +51,7 @@ const init = opts => {
     ? opts.rootPath
     : __dirname.slice(0, __dirname.lastIndexOf('node_modules'))
 
+  const inMocha = opts.forceMocha || mochaDetected
   const suffix = isStr(opts.suffix) ? opts.suffix : '.spec'
   const testDir = isStr(opts.testPath) ? opts.testPath : 'test'
   const srcDir = isStr(opts.srcPath) ? opts.srcPath : 'core'
@@ -102,7 +103,7 @@ const init = opts => {
     }
   })
 
-  if (isInMocha()) {
+  if (inMocha) {
     if (!isFn(opts.wrapper)) {
       opts.wrapper = (info, fn) => describe('Testing module '+ info.name, () => {
         if (info.testNotFound) {
