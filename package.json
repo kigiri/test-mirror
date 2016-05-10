@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/kigiri/test-mirror/issues"
   },
-  "homepage": "https://github.com/kigiri/test-mirror#readme"
+  "homepage": "https://github.com/kigiri/test-mirror#readme",
+  "devDependencies": {
+    "ava": "^0.14.0"
+  }
 }

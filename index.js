@@ -18,10 +18,10 @@ const eachJsFiles = (dirname, fn) => readdir(dirname)
       ? eachJsFiles(filename, fn)
       : fn(filename, stats)))))
 
-const eachJsFilesSync = (dirname, fn) => readdirSync(dirname)
+const eachJsFilesSync = (dirname, fn) => fs.readdirSync(dirname)
   .map(f => {
     const filename = join(dirname, f)
-    const stats = lstatSync(filename)
+    const stats = fs.lstatSync(filename)
 
     return stats.isDirectory()
       ? eachJsFilesSync(filename, fn)
@@ -101,7 +101,7 @@ const init = opts => {
       }
       const testForModule = require(testFilePath)
       if (!isFn(opts.wrapper)) return testForModule(opts.args, _module)
-      opts.wrapper(addInfo({}, filename), () => testForModule(opts.args, _module))
+      opts.wrapper(addInfo({}, filename), testForModule, _module))
     }
 
     catch (err) {

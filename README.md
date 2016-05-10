@@ -39,6 +39,10 @@ require('test-mirror')({
    * default to '.spec'.
    */
 
+  forceSync: false,
+  /* Boolean: force to build tests synchronously.
+   */
+
   forceMocha: false,
   /* Boolean: force to use mocha environnement.
    */
@@ -56,7 +60,10 @@ require('test-mirror')({
    * override it, or make it work for another environnement
    */
 
-  wrapper: (context, test) => describe('Testing module '+ context.name, test())
+  wrapper: (context, test, mod) => {
+    // here is an using ava, test must be synchronous
+    ava('Testing module '+ context.name, t => test(t, mod))
+  }
   /* Function: context to call each tests.
    * The context field contains : 
       - name (String) : name of the module
