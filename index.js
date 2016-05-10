@@ -101,7 +101,7 @@ const init = opts => {
       }
       const testForModule = require(testFilePath)
       if (!isFn(opts.wrapper)) return testForModule(opts.args, _module)
-      opts.wrapper(addInfo({}, filename), testForModule, _module))
+      opts.wrapper(addInfo({}, filename), testForModule, _module)
     }
 
     catch (err) {
