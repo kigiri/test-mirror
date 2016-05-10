@@ -18,6 +18,16 @@ const eachJsFiles = (dirname, fn) => readdir(dirname)
       ? eachJsFiles(filename, fn)
       : fn(filename, stats)))))
 
+const eachJsFilesSync = (dirname, fn) => readdirSync(dirname)
+  .map(f => {
+    const filename = join(dirname, f)
+    const stats = lstatSync(filename)
+
+    return stats.isDirectory()
+      ? eachJsFilesSync(filename, fn)
+      : fn(filename, stats)
+  })
+
 const isFn = fn => typeof fn === 'function'
 
 const mochaDetected = Boolean(process.argv.map(p => p.split(path.sep))
@@ -53,6 +63,7 @@ const init = opts => {
 
   const inMocha = opts.forceMocha || mochaDetected
   const suffix = isStr(opts.suffix) ? opts.suffix : '.spec'
+  const getFiles = opts.forceSync ? eachJsFilesSync : eachJsFiles
   const testDir = isStr(opts.testPath) ? opts.testPath : 'test'
   const srcDir = isStr(opts.srcPath) ? opts.srcPath : 'core'
   const testPath = join(rootDir, testDir)
@@ -77,7 +88,7 @@ const init = opts => {
     return src
   }
 
-  const startTests = () => eachJsFiles(srcPath, filename => {
+  const startTests = () => getFiles(srcPath, filename => {
     if (!opts.match(filename)) return
     const _module = require(filename)
 
