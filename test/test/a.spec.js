@@ -1,7 +1,3 @@
-require('./asdasd')
-
-module.exports = (t, a) => {
-  it('should be ok', () => {
-    t.assert(a.true)
-  })
+module.exports = ({ assert }, a) => {
+  it('true should be true, no shit', () => assert(a.true))
 }

@@ -1,4 +1,5 @@
 "use strict"
+
 const fs = require('fs')
 const assert = require('assert')
 const path = require('path')
@@ -61,13 +62,13 @@ const init = opts => {
     ? opts.rootPath
     : __dirname.slice(0, __dirname.lastIndexOf('node_modules'))
 
-  const inMocha = opts.forceMocha || mochaDetected
   const suffix = isStr(opts.suffix) ? opts.suffix : '.spec'
-  const getFiles = opts.forceSync ? eachJsFilesSync : eachJsFiles
-  const testDir = isStr(opts.testPath) ? opts.testPath : 'test'
   const srcDir = isStr(opts.srcPath) ? opts.srcPath : 'core'
-  const testPath = join(rootDir, testDir)
+  const testDir = isStr(opts.testPath) ? opts.testPath : 'test'
+  const inMocha = opts.forceMocha || mochaDetected
   const srcPath = join(rootDir, srcDir)
+  const testPath = join(rootDir, testDir)
+  const getFiles = opts.async ? eachJsFiles : eachJsFilesSync
   const getTestPath = filename => join(testPath, filename.slice(srcPath.length, -3))
   const fireEvent = (fn, value, fallback) => isFn(fn)
     ? fn(value)
@@ -114,39 +115,36 @@ const init = opts => {
     }
   })
 
-  if (inMocha) {
-    if (!isFn(opts.wrapper)) {
-      opts.wrapper = (info, fn) => describe('Testing module '+ info.name, () => {
-        if (info.testNotFound) {
-          return opts.ignoreNotFound || it.skip('Tests missing', noFile)
-        }
+  if (!inMocha) return startTests()
+  if (!isFn(opts.wrapper)) {
+    opts.wrapper = (info, fn, _module) => describe('Testing module '+ info.name, () => {
+      if (info.testNotFound) {
+        return opts.ignoreNotFound || it.skip('Tests missing', noFile)
+      }
 
-        const onError = err => it('should load the tests properly', () => {
-          throw err
-        })
+      const onError = err => it('should load the tests properly',
+        () => { throw err })
 
-        if (info instanceof Error) return onError(info)
+      if (info instanceof Error) return onError(info)
 
-        try { fn() }
-        catch (err) { onError(err) }
-      })
-    }
-
-    const fail = isFn(opts.onFailingTest) ? opts.onFailingTest : () => {}
-
-    opts.onFailingTest = err => {
-      opts.wrapper(err)
-      fail(err)
-    }
-
-    mochaGlobals.forEach(key => opts.args[key] === undefined
-      ? opts.args[key] = global[key]
-      : opts.args['_'+ key] = global[key])
-
-    return describe('Preparation',
-      () => it('Resolving files to test', startTests))
+      try { fn(opts.args, _module) }
+      catch (err) { onError(err) }
+    })
   }
-  return startTests()
+
+  const fail = isFn(opts.onFailingTest) ? opts.onFailingTest : () => {}
+
+  opts.onFailingTest = err => {
+    opts.wrapper(err)
+    fail(err)
+  }
+
+  mochaGlobals.forEach(key => opts.args[key] === undefined
+    ? opts.args[key] = global[key]
+    : opts.args['_'+ key] = global[key])
+
+  return describe('Preparation',
+    () => it('Resolving files to test', startTests))
 }
 
 module.exports = init
