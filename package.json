@@ -4,7 +4,7 @@
   "description": "Map a test for each file of your source code",
   "main": "index.js",
   "scripts": {
-    "test": "npm test"
+    "test": "mocha test/mocha && ava test/ava/index.js && node test/tape"
   },
   "repository": {
     "type": "git",
@@ -21,6 +21,8 @@
   },
   "homepage": "https://github.com/kigiri/test-mirror#readme",
   "devDependencies": {
-    "ava": "^0.14.0"
+    "ava": "^0.14.0",
+    "mocha": "^2.5.3",
+    "tape": "^4.5.1"
   }
 }
